@@ -1,0 +1,14 @@
+# PyCharm configuration files are not currently being tracked:
+.idea/
+
+# Generated Python files:
+__pycache__/
+*.pyc
+
+# Whilst the raw documentation files will form part of the project,
+# the generated html, etc. files do not:
+doc/_build
+
+# The program's config file which contains database connection credentials.
+# A redacted copy, which can be tracked, can be created by running `dba redact`
+data/program.ini

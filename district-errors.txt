@@ -1,0 +1,19 @@
+/home/natasha/CloudStation/npadb/all-the-stations/data/export/gss_admin_areas.csv
+  4 Stockton-on-Tees........................ E06000004 District not found.
+ 14 York.................................... E06000014 District not found.
+ 55 Bournemouth, Christchurch and Poole..... E06000058 District not found.
+ 56 Dorset.................................. E06000059 District not found.
+ 62 Na h-Eileanan an Iar.................... S12000013 District not found.
+ 75 Aberdeen City........................... S12000033 District not found.
+ 78 Edinburgh............................... S12000036 District not found.
+ 83 Dundee City............................. S12000042 District not found.
+ 87 Glasgow City............................ S12000049 District not found.
+182 South Bucks............................. E07000006 District not found.
+258 Folkestone and Hythe.................... E07000112 District not found.
+365 St. Albans.............................. E07000240 District not found.
+369 East Suffolk............................ E07000244 District not found.
+370 West Suffolk............................ E07000245 District not found.
+371 Somerset West and Taunton............... E07000246 District not found.
+
+Records Processed:   371
+Errors Encountered:   15
