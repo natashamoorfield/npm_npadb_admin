@@ -202,12 +202,18 @@ class Application(object):
         print()
 
     def build_this_table(self, table_name: str, table_metadata: dict):
-        self.env.msg.info(f"Building table '{table_name}' in group '{table_metadata['group']}'")
+        self.env.msg.info(f"Building table '{table_name}' from data in group '{table_metadata['group']}'")
         table = Table(self.env, table_name, table_metadata)
         self.env.msg.debug(table.ddl_filepath)
         self.env.msg.debug(table.data_filepath)
-        table.create_table()
-        table.populate_table()
+        if os.path.isfile(table.data_filepath):
+            table.create_table()
+            table.populate_table()
+        else:
+            self.env.msg.warning([
+                f"'{table_name}.csv' not found in '{table_metadata['group']}'",
+                'No changes have been made to the existing table structure or data.'
+            ])
 
     def dump_database(self):
         dump_filepath = os.path.join('/home/natasha/Dropbox/db_interface', f'{self.env.database_name}.sql')

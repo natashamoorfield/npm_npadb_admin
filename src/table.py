@@ -75,13 +75,22 @@ class Table(object):
             self.record_count = 0
             q = self.data_insert_statement()
             c = self.env.dbc.cursor()
-            with open(self.data_filepath, newline='') as f:
-                for row in csv.reader(f, delimiter='\t'):
-                    values = values_function(row)
-                    if values is not None:
-                        c.execute(q, values)
-            c.close()
-            self.env.dbc.commit()
+            record_count = 0
+            try:
+                with open(self.data_filepath, newline='') as f:
+                    for row in csv.reader(f, delimiter='\t'):
+                        values = values_function(row)
+                        if values is not None:
+                            c.execute(q, values)
+                            record_count += 1
+            except FileNotFoundError:
+                self.env.msg.warning(
+                    f"Import file '{self.table_name}.csv' not found in '{self.table_metadata['group']}'"
+                )
+            finally:
+                c.close()
+                self.env.dbc.commit()
+                self.env.msg.info(f"Records inserted into '{self.table_name}' table = {record_count}")
 
     def data_insert_statement(self):
         q1 = "select column_name from information_schema.columns "
@@ -299,14 +308,6 @@ class Table(object):
 
     @staticmethod
     def values_district_types(items):
-        return items
-
-    def values_districts(self, items):
-        items[2] = self.index_name(items[3])
-        if items[6] == '':
-            items[6] = None
-        items.append(None)
-        items.append(None)
         return items
 
     def values_drinks(self, items):
