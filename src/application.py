@@ -155,7 +155,7 @@ class Application(object):
         :param table_metadata:
         :return:
         """
-        self.env.msg.info(f"Exporting table '{table_name}' in group '{table_metadata['group']}'")
+        self.env.msg.info(f"Exporting table '{table_name}' from group '{table_metadata['group']}'")
         table = Table(self.env, table_name, table_metadata)
         self.env.msg.debug(table.export_filepath)
         table.export()
