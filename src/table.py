@@ -129,31 +129,6 @@ class Table(object):
             row[field] = uuid.UUID(bytes=bytes(row[field]))
         return row
 
-    def values_abc_gazetteer(self, items):
-        if int(items[2]) > 0:
-            district_id = int(items[2])
-        else:
-            district_id = None
-        if int(items[3]) > 0:
-            historic_county_id = int(items[3])
-        else:
-            historic_county_id = None
-        if len(items[4]) == 0 or historic_county_id is None:
-            surrounding_county_id = None
-        else:
-            surrounding_county_id = int(items[4])
-
-        return [
-            items[0],
-            self.index_name(items[1]),
-            items[1],
-            district_id,
-            historic_county_id,
-            surrounding_county_id,
-            items[5],
-            items[6]
-        ]
-
     @staticmethod
     def values_access_levels(items):
         return items
@@ -337,32 +312,6 @@ class Table(object):
     @staticmethod
     def values_locality_types(items):
         return items
-
-    def values_localities(self, items):
-        if int(items[0]) == 0:
-            return None
-
-        if len(items[7]) == 0:
-            historic_county = None
-        else:
-            historic_county = int(items[7])
-        if len(items[8]) == 0:
-            surrounding_county = None
-        else:
-            surrounding_county = int(items[8])
-        row = [
-            items[0],
-            items[1],
-            items[2],
-            self.index_name(items[3]),
-            items[4],
-            items[5],
-            items[6],
-            historic_county,
-            surrounding_county,
-            None
-        ]
-        return row
 
     @staticmethod
     def values_name_types(items):
