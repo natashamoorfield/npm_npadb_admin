@@ -50,8 +50,9 @@ class MyArguments(object):
 
         # Add sub-parser for the initial build task
         db_init_parser = subparsers.add_parser(
-            'init',
-            description='Initialize the database'
+            'Import',
+            description='Create and populate database tables',
+            help='Create and populate database tables'
         )
 
         build_targets = db_init_parser.add_mutually_exclusive_group(required=True)
@@ -69,8 +70,9 @@ class MyArguments(object):
 
         # Add sub-parser for the data export task
         export_parser = subparsers.add_parser(
-            'export',
-            description='Export table(s) to csv file'
+            'Export',
+            description='Export database tables as csv',
+            help='Export database tables as csv'
         )
         export_sources = export_parser.add_mutually_exclusive_group(required=True)
         export_sources.add_argument(
@@ -87,20 +89,23 @@ class MyArguments(object):
 
         # Add sub-parser for the table list task
         list_parser = subparsers.add_parser(
-            'list',
-            description='List all the tables'
+            'ListTables',
+            description='List all the database tables',
+            help='List all the database tables'
         )
 
         # Add sub-parser for the mysqldump task
         mysqldump_parser = subparsers.add_parser(
-            'dump',
-            description='Dump the database to cloud storage'
+            'Dump',
+            description='Dump the database to cloud storage',
+            help='Dump the database to cloud storage'
         )
 
         # Add sub-parser for the 'local government reorganization' task
         lgr_parser = subparsers.add_parser(
-            'lgro',
-            description='Process a Local Govt Reorganization file'
+            'LGReorg',
+            description='Process a Local Govt Reorganization file',
+            help='Process a Local Govt Reorganization file'
         )
 
         lgr_parser.add_argument(
@@ -117,8 +122,9 @@ class MyArguments(object):
 
         # Add sub-parser for the redact task
         redact_parser = subparsers.add_parser(
-            'redt',
-            description="Make a redacted copy of program.ini file"
+            'Redact',
+            description="Make a redacted copy of program.ini file",
+            help="Make a redacted copy of program.ini file"
         )
 
         redact_parser.add_argument(
@@ -129,8 +135,9 @@ class MyArguments(object):
 
         # Add sub-parser for the 'count lines of code' task
         cloc_parser = subparsers.add_parser(
-            'cloc',
-            description="Count lines of code"
+            'Cloc',
+            description="Count lines of code",
+            help="Count lines of code"
         )
 
         cloc_parser.add_argument(
@@ -141,8 +148,9 @@ class MyArguments(object):
 
         # Add sub-parser for the 'version' task
         cloc_parser = subparsers.add_parser(
-            'version',
-            description="Show or update the version number"
+            'Version',
+            description="Show or update the version number",
+            help="Show or update the version number"
         )
 
         cloc_parser.add_argument(
@@ -157,6 +165,9 @@ class MyArguments(object):
             self.args = parser.parse_args()
         else:
             self.args = parser.parse_args(test_args.split())
+
+        self.sub_commands = subparsers
+        self.main_parser = parser
 
     @property
     def arguments(self) -> argparse.Namespace:
@@ -183,6 +194,13 @@ class MyArguments(object):
             out_string += line.format(key, value)
 
         return out_string
+
+    def command_list(self):
+        line_template = "{:.<14} {}\n"
+        out_string = ''
+        for key, value in self.sub_commands.choices.items():
+            out_string += line_template.format(key, value.description)
+        return out_string.strip('\n')
 
 
 class MyEnvironment(BaseEnvironment):
