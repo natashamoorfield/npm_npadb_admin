@@ -559,26 +559,6 @@ class Table(object):
             descriptor_long
         ]
 
-    def values_towns(self, items):
-        if int(items[0]) == 0:
-            return None
-
-        try:
-            boundary_details = items[6]
-        except IndexError:
-            boundary_details = None
-
-        return [
-            items[0],
-            items[1],
-            self.index_name(items[2]),
-            items[2],
-            items[3],
-            items[4],
-            items[5],
-            boundary_details
-        ]
-
     @staticmethod
     def values_user_pub_visits(items):
         return items
