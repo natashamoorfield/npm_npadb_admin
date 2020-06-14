@@ -1,5 +1,6 @@
 from src.environment import MyEnvironment
 from src.exceptions import LGRException
+from src.entity_name import PlaceName
 from datetime import date, timedelta
 import os.path
 import json
@@ -12,23 +13,23 @@ class LGROldDistrict(object):
     def __init__(self, env: MyEnvironment, district: str, county: int):
         self.county_id = county
         self.env = env
-        self.name = district
+        self.name = PlaceName(district)
         self.id = self.fetched_district_data()
 
     def fetched_district_data(self):
         q = "select district_id from districts where index_name = %s and county_id = %s"
         # Adding county_id to the search parameters reduces the possibility of false positive and duplicate results.
         c = self.env.dbc.cursor(prepared=True)
-        c.execute(q, (self.name, self.county_id))
+        c.execute(q, (self.name.index_name(), self.county_id))
         results = c.fetchall()
         n = c.rowcount
         c.close()
         if n == 1:
             return results[0][0]
         if n == 0:
-            raise LGRException(f'District "{self.name}" not found.')
+            raise LGRException(f'District "{self.name.display_name()}" not found.')
         else:
-            raise LGRException(f'{n} entries for district "{self.name}" found.')
+            raise LGRException(f'{n} entries for district "{self.name.display_name()}" found.')
 
 
 class LGRNewDistrict(object):
@@ -38,13 +39,13 @@ class LGRNewDistrict(object):
 
     def __init__(self, env: MyEnvironment, district: dict, county_id: int):
         self.env = env
-        self.name = district['new_district_name']
+        self.name = PlaceName(district['new_district_name'])
         self.county_id = county_id
         self.id, self.district_type = self.fetched_district_data()
         if self.district_type == 0:
             self.district_type = district['district_type']
         if self.district_type != district['district_type']:
-            raise LGRException(f'District Type mismatch for {self.name}.')
+            raise LGRException(f'District Type mismatch for {self.name.display_name()}.')
         self.old_districts = []
         for d in district['old_districts']:
             self.old_districts.append(LGROldDistrict(self.env, d, self.county_id))
@@ -53,7 +54,7 @@ class LGRNewDistrict(object):
         q = "select district_id, district_type_id from districts "
         q += "where index_name = %s and county_id = %s and npm_admin_district = 1"
         cursor = self.env.dbc.cursor(prepared=True)
-        cursor.execute(q, (self.name, self.county_id))
+        cursor.execute(q, (self.name.index_name(), self.county_id))
         results = cursor.fetchall()
         n = cursor.rowcount
         cursor.close()
@@ -62,7 +63,7 @@ class LGRNewDistrict(object):
         if n == 0:
             return 0, 0
         else:
-            raise LGRException(f'{n} entries for district "{self.name}" found.')
+            raise LGRException(f'{n} entries for district "{self.name.display_name()}" found.')
 
     def post_new_district(self, inauguration_date: date) -> list:
         """
@@ -74,8 +75,8 @@ class LGRNewDistrict(object):
         new_district_data = (
             self.id,
             self.county_id,
-            self.name,
-            self.name,
+            self.name.index_name(),
+            self.name.display_name(),
             self.district_type,
             1,
             None,
@@ -95,7 +96,7 @@ class LGRNewDistrict(object):
             pass
         except MySQLError as e:
             messages = [
-                f"An error occurred creating a district record for {self.name}",
+                f"An error occurred creating a district record for {self.name.display_name()}",
                 e.msg,
                 "Skipping creation of district-level (G3) generic level town.",
                 "Skipping creation of district-level (G3) generic level locality."
@@ -115,7 +116,7 @@ class LGRCounty(object):
 
     def __init__(self, env: MyEnvironment, county: dict):
         self.env = env
-        self.name = county['county_name']
+        self.name = PlaceName(county['county_name'])
         self.id, self.next_district_id = self.fetched_county_data()
         self.new_districts = []
         for d in county['new_districts']:
@@ -126,16 +127,16 @@ class LGRCounty(object):
         q += "from counties as c inner join districts d on c.county_id = d.county_id "
         q += "where c.index_name = %s group by c.county_id"
         cursor = self.env.dbc.cursor(prepared=True)
-        cursor.execute(q, (self.name,))
+        cursor.execute(q, (self.name.index_name(),))
         results = cursor.fetchall()
         n = cursor.rowcount
         cursor.close()
         if n == 1:
             return results[0][0], results[0][1]
         if n == 0:
-            raise LGRException(f'County "{self.name}" not found.')
+            raise LGRException(f'County "{self.name.display_name()}" not found.')
         else:
-            raise LGRException(f'{n} entries for county "{self.name}" found.')
+            raise LGRException(f'{n} entries for county "{self.name.display_name()}" found.')
 
 
 class LGRData(object):
@@ -219,17 +220,16 @@ class LocalGovernmentReorganization(object):
 
     def do_dry_run(self):
         """
-        Instead of actually performing the reorganization, just display the parsed input date to
+        Instead of actually performing the reorganization, just display the parsed input data to
         give the user an indication of the changes that will be made when she commits to it.
         :return: Nothing
         """
-        # Just display the parsed input data
         for county in self.data.counties:
-            print(f'{county.name} ({county.id} {county.next_district_id})')
+            print(f'{county.name.display_name()} ({county.id} {county.next_district_id})')
             for new_district in county.new_districts:
-                print(f'    {new_district.name} ({new_district.id}, {new_district.district_type})')
+                print(f'    {new_district.name.display_name()} ({new_district.id}, {new_district.district_type})')
                 for old_district in new_district.old_districts:
-                    print(f'        {old_district.name} ({old_district.id})')
+                    print(f'        {old_district.name.display_name()} ({old_district.id})')
             print()
         self.env.msg.warning('Dry run only; no changes have been committed to the database.')
 
@@ -258,8 +258,8 @@ class LocalGovernmentReorganization(object):
         new_district.id = county.next_district_id
         error_messages = new_district.post_new_district(self.inauguration_date)
         if len(error_messages) == 0:
-            self.env.msg.info(f'Create new district {new_district.name} '
-                              f'({new_district.id}) in {county.name}: {self.inauguration_date}')
+            self.env.msg.info(f'Create new district {new_district.name.display_name()} '
+                              f'({new_district.id}) in {county.name.display_name()}: {self.inauguration_date}')
             self.env.msg.debug(error_messages)
             # Only attempt to create a G3 town if the new district was successfully created
             g3_town_id = self.create_g3_town(new_district)
@@ -289,14 +289,19 @@ class LocalGovernmentReorganization(object):
         q += "district_id, index_name, display_name, town_type_id"
         q += ") values (%s, $s, $s, $s)"
         self.env.msg.debug(q)
-        new_record_data = (new_district.id, new_district.name, new_district.name, self.G3_TOWN_TYPE_ID)
+        new_record_data = (
+            new_district.id,
+            new_district.name.index_name(),
+            new_district.name.display_name(),
+            self.G3_TOWN_TYPE_ID
+        )
         self.env.msg.debug(new_record_data)
         try:
             # TODO execute the query
             pass
         except MySQLError as e:
             error_messages = [
-                f"An error occurred inserting district-level (G3) generic town {new_district.name}",
+                f"An error occurred inserting district-level (G3) generic town {new_district.name.display_name()}",
                 e.msg,
                 "Skipping creation of district_level generic (G3) locality in localities table"
             ]
@@ -305,7 +310,7 @@ class LocalGovernmentReorganization(object):
             self.g3_locality_id = 0
         else:
             g3_town_id = 69
-            self.env.msg.info(f'Create a new district-level (G3) generic town for {new_district.name}')
+            self.env.msg.info(f'Create a new district-level (G3) generic town for {new_district.name.display_name()}')
             self.env.msg.debug(f'New town_id is {g3_town_id}')
         finally:
             cursor.close()
@@ -320,8 +325,8 @@ class LocalGovernmentReorganization(object):
         new_record_data = (
             town_id,
             self.G3_LOCALITY_TYPE_ID,
-            new_district.name,
-            new_district.name
+            new_district.name.index_name(),
+            new_district.name.display_name()
         )
         self.env.msg.debug(new_record_data)
         try:
@@ -329,7 +334,8 @@ class LocalGovernmentReorganization(object):
             pass
         except MySQLError as e:
             error_messages = [
-                f"An error occurred inserting district-level (G3) generic locality for {new_district.name}",
+                f"An error occurred inserting district-level (G3) "
+                f"generic locality for {new_district.name.display_name()}",
                 e.msg
             ]
             self.env.msg.warning([error_messages])
@@ -337,7 +343,7 @@ class LocalGovernmentReorganization(object):
         else:
             g3_locality_id = 6964
             self.env.msg.info(f'Create a new district-level (G3) generic locality '
-                              f'for {new_district.name} in generic town #{town_id}')
+                              f'for {new_district.name.display_name()} in generic town #{town_id}')
             self.env.msg.debug(f'New locality_id is {g3_locality_id}')
         finally:
             cursor.close()
@@ -363,13 +369,13 @@ class LocalGovernmentReorganization(object):
             pass
         except MySQLError as e:
             messages = [
-                f"An error occurred updating the district record for {district.name} ({district.id}).",
+                f"An error occurred updating the district record for {district.name.display_name()} ({district.id}).",
                 e.msg,
                 "Skipping updates of the towns and abc_gazetteer tables."
             ]
             self.env.msg.warning(messages)
         else:
-            self.env.msg.info(f'Abolish {district.name} ({district.id}) on {self.abolition_date}')
+            self.env.msg.info(f'Abolish {district.name.display_name()} ({district.id}) on {self.abolition_date}')
             messages = []
         finally:
             cursor.close()
@@ -397,14 +403,14 @@ class LocalGovernmentReorganization(object):
         except MySQLError as e:
             messages = [
                 f"An error occurred updating the towns table for towns that were in "
-                f"{old_district.name} ({old_district.id}).",
+                f"{old_district.name.display_name()} ({old_district.id}).",
                 e.msg,
                 f"Skipping updates of the abc_gazetteer table."
             ]
             self.env.msg.warning(messages)
         else:
-            self.env.msg.info(f'Move towns from {old_district.name} ({old_district.id}) '
-                              f'to {new_district.name} ({new_district.id})')
+            self.env.msg.info(f'Move towns from {old_district.name.display_name()} ({old_district.id}) '
+                              f'to {new_district.name.display_name()} ({new_district.id})')
             messages = []
         finally:
             cursor.close()
@@ -424,13 +430,13 @@ class LocalGovernmentReorganization(object):
         except MySQLError as e:
             messages = [
                 f'An error occurred updating the abc_gazetteer table for towns that were in '
-                f'{old_district.name} ({old_district.id})',
+                f'{old_district.name.display_name()} ({old_district.id})',
                 e.msg
             ]
             self.env.msg.warning(messages)
         else:
-            self.env.msg.info(f'Move ABC Gazetteer entries from {old_district.name} ({old_district.id}) '
-                              f'to {new_district.name} ({new_district.id})')
+            self.env.msg.info(f'Move ABC Gazetteer entries from {old_district.name.display_name()} ({old_district.id}) '
+                              f'to {new_district.name.display_name()} ({new_district.id})')
         finally:
             cursor.close()
 
