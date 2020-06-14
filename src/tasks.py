@@ -115,12 +115,59 @@ class Dump(BaseTask):
 
 class LGReorg(BaseTask):
     def run(self):
+        """
+        Run the Local Government Reorganization task.
+        Unless over-ridden by options (-q, -d or -b) the user is prompted to confirm that
+        she wishes to commit to the irrevocable changes the process will make to the database.
+        She can choose to barrel on regardless,
+        perform a database backup first,
+        revert to dry-run mode or
+        abort the process altogether.
+        No confirmation is sought if dba is running in quite mode.
+        The -b option ensures a backup is carried out even in quiet mode.
+        :return:
+        """
         from src.lgro import LocalGovernmentReorganization
         lgr = LocalGovernmentReorganization(self.env)
         if self.env.args.dry_run:
             lgr.do_dry_run()
         else:
-            lgr.reorganize()
+            r = self.confirm_reorganization()
+            if r == "Y":
+                lgr.reorganize()
+            elif r == 'B':
+                backup = Dump(self.env)
+                backup.run()
+                lgr.reorganize()
+            elif r == 'D':
+                lgr.do_dry_run()
+            else:
+                self.env.msg.ok("LGReorg safely aborted.")
+
+    def confirm_reorganization(self):
+        """
+        Obtain confirmation that the LGReorg can proceed.
+        In quiet mode or if a backup is requested in the options (-b) , confirmations is automatic.
+        Otherwise the user is explicitly asked to confirm what she wants to do.
+        :return:
+        """
+        if self.env.args.backup:
+            return 'B'
+        if self.env.args.quiet:
+            return 'Y'
+        self.env.msg.info([
+            "This process performs bulk updates on the database that cannot be undone.",
+            "--Please confirm your intention to continue:",
+            ">>Enter 'Y' to continue",
+            ">>Enter 'B' to continue but backup the database first",
+            ">>Enter 'D' to look at but not execute the changes",
+            ">>Anything else to abort altogether"
+        ])
+        response = input("\n           Response: ")
+        print()
+        if len(response) == 0:
+            return 'A'
+        return response.strip().upper()[0]
 
 
 class Redact(BaseTask):

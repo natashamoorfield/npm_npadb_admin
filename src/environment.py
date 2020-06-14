@@ -111,13 +111,19 @@ class MyArguments(object):
         lgr_parser.add_argument(
             'year',
             type=int,
-            help='Year of reorganization'
+            help='Year of the Reorganization'
         )
 
         lgr_parser.add_argument(
             '-d', '--dry-run',
             action='store_true',
             help='show re-org data but do not commit changes'
+        )
+
+        lgr_parser.add_argument(
+            '-b', '--backup',
+            action='store_true',
+            help='Backup the database first (implies not -d)'
         )
 
         # Add sub-parser for the redact task

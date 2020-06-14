@@ -236,8 +236,6 @@ class LocalGovernmentReorganization(object):
         """
         Commit the reorganization to the gazetteer
         """
-        # TODO Confirm that the user wishes to proceed with a 'cannot be undone' warning
-        # TODO Carry out a backup of the database as changes cannot otherwise be undone
         for county in self.data.counties:
             for new_district in county.new_districts:
                 self.g3_locality_id = -1
@@ -420,7 +418,7 @@ class LocalGovernmentReorganization(object):
         update_arguments = (new_district.id, old_district.id)
         self.env.msg.debug(update_arguments)
         try:
-            # TODO execute query
+            # TODO execute the query
             pass
         except MySQLError as e:
             messages = [
