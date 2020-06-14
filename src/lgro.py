@@ -86,14 +86,12 @@ class LGRNewDistrict(object):
         q = "insert into districts ("
         q += "district_id, county_id, index_name, display_name, district_type_id, npm_admin_district, "
         q += "gss_admin_area_code, inauguration_date, abolition_date"
-        q += ") values (%s, $s, $s, $s, $s, $s, $s, $s, $s)"
+        q += ") values (%s, %s, %s, %s, %s, %s, %s, %s, %s)"
         self.env.msg.debug(q)
         self.env.msg.debug(new_district_data)
         cursor = self.env.dbc.cursor(prepared=True)
         try:
-            # TODO execute the query
-
-            pass
+            cursor.execute(q, new_district_data)
         except MySQLError as e:
             messages = [
                 f"An error occurred creating a district record for {self.name.display_name()}",
@@ -103,6 +101,7 @@ class LGRNewDistrict(object):
             ]
             self.env.msg.warning(messages)
         else:
+            self.env.dbc.commit()
             messages = []
         finally:
             cursor.close()
@@ -287,7 +286,7 @@ class LocalGovernmentReorganization(object):
         cursor = self.env.dbc.cursor(prepared=True)
         q = "insert into towns ("
         q += "district_id, index_name, display_name, town_type_id"
-        q += ") values (%s, $s, $s, $s)"
+        q += ") values (%s, %s, %s, %s)"
         self.env.msg.debug(q)
         new_record_data = (
             new_district.id,
@@ -297,8 +296,7 @@ class LocalGovernmentReorganization(object):
         )
         self.env.msg.debug(new_record_data)
         try:
-            # TODO execute the query
-            pass
+            cursor.execute(q, new_record_data)
         except MySQLError as e:
             error_messages = [
                 f"An error occurred inserting district-level (G3) generic town {new_district.name.display_name()}",
@@ -309,7 +307,8 @@ class LocalGovernmentReorganization(object):
             g3_town_id = 0
             self.g3_locality_id = 0
         else:
-            g3_town_id = 69
+            self.env.dbc.commit()
+            g3_town_id = cursor.lastrowid
             self.env.msg.info(f'Create a new district-level (G3) generic town for {new_district.name.display_name()}')
             self.env.msg.debug(f'New town_id is {g3_town_id}')
         finally:
@@ -320,7 +319,7 @@ class LocalGovernmentReorganization(object):
         cursor = self.env.dbc.cursor(prepared=True)
         q = "insert into localities ("
         q += "town_id, locality_type_id, index_name, display_name"
-        q += ") values (%s, $s, $s, $s)"
+        q += ") values (%s, %s, %s, %s)"
         self.env.msg.debug(q)
         new_record_data = (
             town_id,
@@ -330,8 +329,7 @@ class LocalGovernmentReorganization(object):
         )
         self.env.msg.debug(new_record_data)
         try:
-            # TODO execute the query
-            pass
+            cursor.execute(q, new_record_data)
         except MySQLError as e:
             error_messages = [
                 f"An error occurred inserting district-level (G3) "
@@ -341,7 +339,8 @@ class LocalGovernmentReorganization(object):
             self.env.msg.warning([error_messages])
             g3_locality_id = 0
         else:
-            g3_locality_id = 6964
+            self.env.dbc.commit()
+            g3_locality_id = cursor.lastrowid
             self.env.msg.info(f'Create a new district-level (G3) generic locality '
                               f'for {new_district.name.display_name()} in generic town #{town_id}')
             self.env.msg.debug(f'New locality_id is {g3_locality_id}')
@@ -365,8 +364,7 @@ class LocalGovernmentReorganization(object):
         update_arguments = (0, self.abolition_date.isoformat(), district.id)
         self.env.msg.debug(update_arguments)
         try:
-            # TODO execute the query
-            pass
+            cursor.execute(q, update_arguments)
         except MySQLError as e:
             messages = [
                 f"An error occurred updating the district record for {district.name.display_name()} ({district.id}).",
@@ -375,6 +373,7 @@ class LocalGovernmentReorganization(object):
             ]
             self.env.msg.warning(messages)
         else:
+            self.env.dbc.commit()
             self.env.msg.info(f'Abolish {district.name.display_name()} ({district.id}) on {self.abolition_date}')
             messages = []
         finally:
@@ -398,8 +397,7 @@ class LocalGovernmentReorganization(object):
         update_arguments = (new_district.id, old_district.id, self.G3_TOWN_TYPE_ID)
         self.env.msg.debug(update_arguments)
         try:
-            # TODO execute the query
-            pass
+            cursor.execute(q, update_arguments)
         except MySQLError as e:
             messages = [
                 f"An error occurred updating the towns table for towns that were in "
@@ -409,8 +407,12 @@ class LocalGovernmentReorganization(object):
             ]
             self.env.msg.warning(messages)
         else:
-            self.env.msg.info(f'Move towns from {old_district.name.display_name()} ({old_district.id}) '
-                              f'to {new_district.name.display_name()} ({new_district.id})')
+            self.env.dbc.commit()
+            self.env.msg.info([
+                f'Move towns from {old_district.name.display_name()} ({old_district.id}) '
+                f'to {new_district.name.display_name()} ({new_district.id})',
+                f'>>Records updated: {cursor.rowcount}'
+            ])
             messages = []
         finally:
             cursor.close()
@@ -425,8 +427,7 @@ class LocalGovernmentReorganization(object):
         update_arguments = (new_district.id, old_district.id)
         self.env.msg.debug(update_arguments)
         try:
-            # TODO execute the query
-            pass
+            cursor.execute(q, update_arguments)
         except MySQLError as e:
             messages = [
                 f'An error occurred updating the abc_gazetteer table for towns that were in '
@@ -435,8 +436,12 @@ class LocalGovernmentReorganization(object):
             ]
             self.env.msg.warning(messages)
         else:
-            self.env.msg.info(f'Move ABC Gazetteer entries from {old_district.name.display_name()} ({old_district.id}) '
-                              f'to {new_district.name.display_name()} ({new_district.id})')
+            self.env.dbc.commit()
+            self.env.msg.info([
+                f'Move ABC Gazetteer entries from {old_district.name.display_name()} ({old_district.id}) '
+                f'to {new_district.name.display_name()} ({new_district.id})',
+                f'>>Records updated: {cursor.rowcount}'
+            ])
         finally:
             cursor.close()
 
