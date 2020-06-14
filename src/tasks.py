@@ -92,8 +92,14 @@ class ListTables(BaseTask):
 
 
 class Dump(BaseTask):
+    """
+    Backup NPADB using mysqldump
+    :todo: Add process to manage old backups
+    :todo: Add process to restore the database from a backup
+    """
     def run(self):
-        dump_filepath = os.path.join('/home/natasha/Dropbox/db_interface', f'{self.env.database_name}.sql')
+        dump_id = self.env.program.start.strftime('%Y-%m-%d-%H%M%S')
+        dump_filepath = os.path.join('/home/natasha/Dropbox/db_interface', f'{self.env.database_name}_{dump_id}.sql')
         dump_command = [
             'mysqldump',
             self.env.database_name,
@@ -105,12 +111,10 @@ class Dump(BaseTask):
             comp_command.append('-v')
         comp_command.append('--force')
         comp_command.append(dump_filepath)
-        print(' '.join(dump_command))
-        print()
+        self.env.msg.info(' '.join(dump_command))
         subprocess.run(dump_command)
-        print(' '.join(comp_command))
+        self.env.msg.info(' '.join(comp_command))
         subprocess.run(comp_command)
-        print()
 
 
 class LGReorg(BaseTask):
@@ -125,7 +129,7 @@ class LGReorg(BaseTask):
         abort the process altogether.
         No confirmation is sought if dba is running in quite mode.
         The -b option ensures a backup is carried out even in quiet mode.
-        :return:
+        :return: A single, upper case character.
         """
         from src.lgro import LocalGovernmentReorganization
         lgr = LocalGovernmentReorganization(self.env)
