@@ -29,8 +29,14 @@ class Table(object):
         self.record_count = 0
 
     def export(self):
+        """
+        Export the data, row by row, from the database to the csv text file.
+        Report the number of records exported from the table.
+        If there is a database error, halt the export of this table but do not stop the whole program.
+        """
         query = f"select * from {self.table_name}"
         c = self.env.dbc.cursor()
+        record_count = 0
         try:
             c.execute(query)
         except mysql.connector.errors.ProgrammingError as e:
@@ -40,8 +46,10 @@ class Table(object):
                 writer = csv.writer(f, delimiter='\t')
                 for row in c:
                     writer.writerow(self.value_conversions_export(row))
-
-        c.close()
+                    record_count += 1
+        finally:
+            self.env.msg.info(f"Records exported from '{self.table_name}' table = {record_count}")
+            c.close()
 
     def create_table(self):
         try:
@@ -72,7 +80,6 @@ class Table(object):
             self.env.msg.debug(f"Using generic data conversion method '{generic_function}'")
         finally:
             # populate the table
-            self.record_count = 0
             q = self.data_insert_statement()
             c = self.env.dbc.cursor()
             record_count = 0

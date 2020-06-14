@@ -91,6 +91,7 @@ class LGRNewDistrict(object):
         cursor = self.env.dbc.cursor(prepared=True)
         try:
             # TODO execute the query
+
             pass
         except MySQLError as e:
             messages = [
