@@ -52,8 +52,7 @@ class Table(object):
     def districts_search_query():
         q = "select * from districts where "
         q += "index_name = %s "
-        q += "and district_type_id <> 17 "
-        q += "and npm_admin_district = 1"
+        q += "and district_type_id <> 17"
         return q
 
 
