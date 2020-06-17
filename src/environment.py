@@ -204,9 +204,9 @@ class MyArguments(object):
     def command_list(self):
         line_template = "{:.<14} {}\n"
         out_string = ''
-        for key, value in self.sub_commands.choices.items():
+        for key, value in sorted(self.sub_commands.choices.items(), key=lambda item: item[0].lower()):
             out_string += line_template.format(key, value.description)
-        return out_string.strip('\n')
+        return out_string
 
 
 class MyEnvironment(BaseEnvironment):
