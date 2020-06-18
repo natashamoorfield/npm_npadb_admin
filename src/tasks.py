@@ -215,3 +215,10 @@ class DistrictGSSTask(BaseTask):
         from src.district_gss import DistrictGSSData
         data = DistrictGSSData(self.env)
         data.data_import()
+
+
+class PostCodeBuildTask(BaseTask):
+    def run(self):
+        from src.code_point_open import CodePointOpen
+        data = CodePointOpen(self.env)
+        data.import_post_code_data()

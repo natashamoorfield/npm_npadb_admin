@@ -178,6 +178,13 @@ class MyArguments(object):
             metavar='FILE'
         )
 
+        # Add sub_parser for the 'PostCodeBuild' task
+        post_code_builder_parser = subparsers.add_parser(
+            'PostCodeBuild',
+            description='Build post_codes table from Code Point Open dataset',
+            help='Build post_codes table.'
+        )
+
         # Decide whether to parse 'test arguments' provided internally
         # or real arguments from the command line
         if test_args is None:
@@ -215,7 +222,7 @@ class MyArguments(object):
         return out_string
 
     def command_list(self):
-        line_template = "{:.<14} {}\n"
+        line_template = "{:.<17} {}\n"
         out_string = ''
         for key, value in sorted(self.sub_commands.choices.items(), key=lambda item: item[0].lower()):
             out_string += line_template.format(key, value.description)
