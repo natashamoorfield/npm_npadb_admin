@@ -165,6 +165,19 @@ class MyArguments(object):
             help='Increment the version number'
         )
 
+        # Add sub-parser for the 'DistrictGSS' task
+        district_gss_parser = subparsers.add_parser(
+            'DistrictGSS',
+            description="Import GSS Admin Area Codes",
+            help="Import GSS Admin Area Codes"
+        )
+
+        district_gss_parser.add_argument(
+            '-s', '--source',
+            help='Data source file (if not default)',
+            metavar='FILE'
+        )
+
         # Decide whether to parse 'test arguments' provided internally
         # or real arguments from the command line
         if test_args is None:

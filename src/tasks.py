@@ -16,7 +16,7 @@ class BaseTask(object):
         raise NPMException(f'{self.__class__.__name__} functionality not implemented.')
 
 
-class Import(BaseTask):
+class ImportTask(BaseTask):
     def run(self):
         query = "SET FOREIGN_KEY_CHECKS = {}"
         c = self.env.dbc.cursor()
@@ -53,7 +53,7 @@ class Import(BaseTask):
             ])
 
 
-class Export(BaseTask):
+class ExportTask(BaseTask):
     def run(self):
         """
         Prepare to export the contents of all tables or list of specified tables
@@ -86,12 +86,12 @@ class Export(BaseTask):
         table.export()
 
 
-class ListTables(BaseTask):
+class ListTablesTask(BaseTask):
     def run(self):
         self.schema.show_tables()
 
 
-class Dump(BaseTask):
+class DumpTask(BaseTask):
     """
     Backup NPADB using mysqldump
     :todo: Add process to manage old backups
@@ -117,7 +117,7 @@ class Dump(BaseTask):
         subprocess.run(comp_command)
 
 
-class LGReorg(BaseTask):
+class LGReorgTask(BaseTask):
     def run(self):
         """
         Run the Local Government Reorganization task.
@@ -174,7 +174,7 @@ class LGReorg(BaseTask):
         return response.strip().upper()[0]
 
 
-class Redact(BaseTask):
+class RedactTask(BaseTask):
     def run(self):
         r = self.env.program.redacted_config()
         self.env.program.save_config_data((r, 'redacted.ini'))
@@ -182,7 +182,7 @@ class Redact(BaseTask):
             print(self.env.program.printable_config_render(r))
 
 
-class Cloc(BaseTask):
+class ClocTask(BaseTask):
     def run(self):
         command_line = [
             'cloc',
@@ -196,7 +196,7 @@ class Cloc(BaseTask):
         subprocess.run(command_line)
 
 
-class Version(BaseTask):
+class VersionTask(BaseTask):
     def run(self):
         if self.env.args.increment:
             self.env.program.inc_version()
@@ -204,7 +204,14 @@ class Version(BaseTask):
             print(f'** Version {self.env.program.version_string()} **')
 
 
-class TaskList(BaseTask):
+class TaskListTask(BaseTask):
     def run(self):
         print('AVAILABLE COMMANDS:')
         print(self.env.argument_parser.command_list())
+
+
+class DistrictGSSTask(BaseTask):
+    def run(self):
+        from src.district_gss import DistrictGSSData
+        data = DistrictGSSData(self.env)
+        data.data_import()

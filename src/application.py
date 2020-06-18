@@ -11,7 +11,6 @@ class Application(object):
     def __init__(self, root: str):
         self.env = MyEnvironment(root)
         self.env.render_base_program_info()
-        self.schema = NPADBTables(self.env)
 
     def run(self):
         try:
@@ -56,7 +55,7 @@ class Application(object):
         else:
             task_class = self.env.args.task
         try:
-            task_object = eval(task_class + '(self.env)')
+            task_object = eval(task_class + 'Task(self.env)')
             if not isinstance(task_object, BaseTask):
                 raise NameError
         except NameError:
