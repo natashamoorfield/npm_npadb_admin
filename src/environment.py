@@ -1,5 +1,5 @@
-from npm_common.utilities import MyStatusMessage
-from npm_common.environment import BaseEnvironment
+from npm_common.common_utilities  import MyStatusMessage
+from npm_common.base_environment import BaseEnvironment
 from configparser import ConfigParser
 
 import mysql.connector
