@@ -185,6 +185,25 @@ class MyArguments(object):
             help='Build post_codes table.'
         )
 
+        post_code_builder_parser.add_argument(
+            'edition',
+            help='The edition of Code Point Open to parse',
+            metavar='YYYY-MM'
+        )
+
+        post_code_sources = post_code_builder_parser.add_mutually_exclusive_group(required=True)
+        post_code_sources.add_argument(
+            '--all',
+            action='store_true',
+            help='Import all the post code areas'
+        )
+        post_code_sources.add_argument(
+            '--areas',
+            nargs='+',
+            help='Specify the post code areas to import',
+            metavar='AREA'
+        )
+
         # Decide whether to parse 'test arguments' provided internally
         # or real arguments from the command line
         if test_args is None:
@@ -244,6 +263,7 @@ class MyEnvironment(BaseEnvironment):
             database=self.database_name
         )
         self.npadb_data_root = '/home/natasha/CloudStation/npadb/all-the-stations/data'
+        self.external_data_root = '/home/natasha/CloudStation/npadb/all-the-stations/external-data'
 
     def render_base_program_info(self):
         if self.args.verbosity > 0:

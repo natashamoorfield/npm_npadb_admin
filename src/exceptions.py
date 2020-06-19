@@ -11,3 +11,7 @@ class LGRException(NPMException):
 
 class LGReorgError(NPMError):
     pass
+
+
+class CodePointOpenError(NPMError):
+    pass

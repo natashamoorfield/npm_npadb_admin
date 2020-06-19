@@ -25,7 +25,7 @@ class Application(object):
             self.env.msg.ok([
                 f'{self.env.program.program_name} terminated without encountering any fatal errors.',
                 f'--Goodbye, {self.env.user.username}.',
-                ''
+                '--'
             ])
         finally:
             self.env.clean_up()
