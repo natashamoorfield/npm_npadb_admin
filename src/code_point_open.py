@@ -117,19 +117,21 @@ class CodePointOpen(object):
         gr_source_id = int(data[1]) + 400
         osx = data[2]
         osy = data[3]
-        district_id = None
         try:
             if data[8] == 'E06000004':  # Stockton-on-Tees
                 district_id = self.stockton_division[post_code[:-4]]
             else:
                 district_id = self.gss_codes[data[8]]
-                self.post_new_record(cursor, (post_code, osx, osy, gr_source_id, district_id))
         except KeyError:
             if data[8] == '' and gr_source_id in [460, 490]:
                 district_id = None
             else:
                 raise CodePointOpenError(
                     f'Problem with district code {data[8]} at {post_code} [{osx},{osy}] {gr_source_id}')
+
+        try:
+            q = f'insert into post_codes values (%s, %s, %s, %s, %s)'
+            cursor.execute(q, (post_code, osx, osy, gr_source_id, district_id))
         except MySQLError as mse:
             e = CodePointOpenError(f'Error attempting to insert {post_code} into `post_codes` table')
             e.add_message(mse.args[1])
@@ -160,8 +162,3 @@ class CodePointOpen(object):
     @staticmethod
     def formatted_post_code(raw_post_code: str) -> str:
         return f'{raw_post_code[:-3].strip()} {raw_post_code[-3:]}'
-
-    @staticmethod
-    def post_new_record(cursor: MySQLCursor, data: tuple):
-        q = f'insert into post_codes values (%s, %s, %s, %s, %s)'
-        cursor.execute(q, data)
