@@ -35,7 +35,14 @@ class CodePointOpen(object):
         self.gss_codes = self.fetched_gss_codes()
 
     def import_post_code_data(self):
-        # TODO If the --all option is set, truncate the existing post_codes table
+        # If the --all option is set, truncate the existing post_codes table
+        if self.env.args.all:
+            q = "truncate table post_codes"
+            c = self.env.dbc.cursor()
+            c.execute(q)
+            self.env.dbc.commit()
+            c.close()
+
         for filename in self.data_files():
             post_code_area = filename.split('.')[0].upper()
             try:
@@ -130,8 +137,9 @@ class CodePointOpen(object):
                     f'Problem with district code {data[8]} at {post_code} [{osx},{osy}] {gr_source_id}')
 
         try:
-            q = f'insert into post_codes values (%s, %s, %s, %s, %s)'
-            cursor.execute(q, (post_code, osx, osy, gr_source_id, district_id))
+            pass
+            # q = f'insert into post_codes values (%s, %s, %s, %s, %s)'
+            # cursor.execute(q, (post_code, osx, osy, gr_source_id, district_id))
         except MySQLError as mse:
             e = CodePointOpenError(f'Error attempting to insert {post_code} into `post_codes` table')
             e.add_message(mse.args[1])
