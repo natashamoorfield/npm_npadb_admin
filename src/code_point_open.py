@@ -102,11 +102,17 @@ class CodePointOpen(object):
 
     def process_csv_file(self, post_code_area, filename: str):
         with open(os.path.join(self.data_root, filename), newline='') as f:
-            # TODO Delete existing entries in the post_codes table for the post_code_area
             self.env.msg.info(f'Processing Post Code Area "{post_code_area}"')
             record_count = 0
             error_count = 0
             cursor = self.env.dbc.cursor()
+            if not self.env.args.all:
+                # Delete existing entries in the post_codes table for the post_code_area
+                q = "delete from post_codes "
+                q += "where post_code regexp %s"
+                post_code_area_regexp = f'^{post_code_area}[0-9]'
+                cursor.execute(q, (post_code_area_regexp, ))
+                self.env.dbc.commit()
             for row in csv.reader(f, delimiter=','):
                 try:
                     self.process_post_code(cursor, row)
@@ -137,9 +143,8 @@ class CodePointOpen(object):
                     f'Problem with district code {data[8]} at {post_code} [{osx},{osy}] {gr_source_id}')
 
         try:
-            pass
-            # q = f'insert into post_codes values (%s, %s, %s, %s, %s)'
-            # cursor.execute(q, (post_code, osx, osy, gr_source_id, district_id))
+            q = f'insert into post_codes values (%s, %s, %s, %s, %s)'
+            cursor.execute(q, (post_code, osx, osy, gr_source_id, district_id))
         except MySQLError as mse:
             e = CodePointOpenError(f'Error attempting to insert {post_code} into `post_codes` table')
             e.add_message(mse.args[1])
