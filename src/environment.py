@@ -1,5 +1,5 @@
-from npm_common.utilities import MyStatusMessage
-from npm_common.environment import BaseEnvironment
+from npm_common.common_utilities  import MyStatusMessage
+from npm_common.base_environment import BaseEnvironment
 from configparser import ConfigParser
 
 import mysql.connector
@@ -178,6 +178,32 @@ class MyArguments(object):
             metavar='FILE'
         )
 
+        # Add sub_parser for the 'PostCodeBuild' task
+        post_code_builder_parser = subparsers.add_parser(
+            'PostCodeBuild',
+            description='Build post_codes table from Code Point Open dataset',
+            help='Build post_codes table.'
+        )
+
+        post_code_builder_parser.add_argument(
+            'edition',
+            help='The edition of Code Point Open to parse',
+            metavar='YYYY-MM'
+        )
+
+        post_code_sources = post_code_builder_parser.add_mutually_exclusive_group(required=True)
+        post_code_sources.add_argument(
+            '--all',
+            action='store_true',
+            help='Import all the post code areas'
+        )
+        post_code_sources.add_argument(
+            '--areas',
+            nargs='+',
+            help='Specify the post code areas to import',
+            metavar='AREA'
+        )
+
         # Decide whether to parse 'test arguments' provided internally
         # or real arguments from the command line
         if test_args is None:
@@ -215,7 +241,7 @@ class MyArguments(object):
         return out_string
 
     def command_list(self):
-        line_template = "{:.<14} {}\n"
+        line_template = "{:.<17} {}\n"
         out_string = ''
         for key, value in sorted(self.sub_commands.choices.items(), key=lambda item: item[0].lower()):
             out_string += line_template.format(key, value.description)
@@ -237,6 +263,7 @@ class MyEnvironment(BaseEnvironment):
             database=self.database_name
         )
         self.npadb_data_root = '/home/natasha/CloudStation/npadb/all-the-stations/data'
+        self.external_data_root = '/home/natasha/CloudStation/npadb/all-the-stations/external-data'
 
     def render_base_program_info(self):
         if self.args.verbosity > 0:

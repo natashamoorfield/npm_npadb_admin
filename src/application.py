@@ -1,7 +1,6 @@
 from src.tasks import *
 from src.environment import MyEnvironment
 from src.exceptions import *
-from src.npadb_tables import NPADBTables
 
 import mysql.connector.errors
 
@@ -19,11 +18,14 @@ class Application(object):
         except NPMException as e:
             self.env.msg.error(e.args[0])
             print()
+        except NPMError as e:
+            self.env.msg.error(e.messages())
+            print()
         else:
             self.env.msg.ok([
                 f'{self.env.program.program_name} terminated without encountering any fatal errors.',
                 f'--Goodbye, {self.env.user.username}.',
-                ''
+                '--'
             ])
         finally:
             self.env.clean_up()
