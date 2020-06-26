@@ -2,7 +2,7 @@ from src.environment import MyEnvironment
 from src.exceptions import CodePointOpenError
 from mysql.connector.cursor import MySQLCursor
 from mysql.connector.errors import Error as MySQLError
-
+from typing import Tuple
 
 import os
 import re
@@ -10,7 +10,7 @@ import csv
 
 
 class CodePointOpen(object):
-    stockton_division = {
+    STOCKTON_DIVISIONS = {
         'DL2': 2610,
         'TS2': 2610,
         'TS8': 611,
@@ -24,17 +24,28 @@ class CodePointOpen(object):
         'TS22': 2610,
         'TS23': 2610
     }
+    EDITION_PATTERN = r'20[0-9]{2}-(02|05|08|11)'
 
     def __init__(self, env: MyEnvironment):
         self.env = env
         (self.edition, self.data_root) = self.verified_edition()
-        print('Post Code Build')
-        print(self.data_root)
+
+        # Counting variables
         self.area_count = 0
         self.total_record_count = 0
+
+        # Cache the gss_admin_area_codes in a dict rather than perform millions of individual db lookups.
         self.gss_codes = self.fetched_gss_codes()
 
     def import_post_code_data(self):
+        """
+        The main build process
+        """
+        # Display the process title
+        if not self.env.args.quiet:
+            print('** Build post_codes Table **')
+        self.env.msg.debug(self.data_root)
+
         # If the --all option is set, truncate the existing post_codes table
         if self.env.args.all:
             q = "truncate table post_codes"
@@ -57,20 +68,23 @@ class CodePointOpen(object):
                 self.area_count += 1
                 self.total_record_count += area_record_count
                 self.env.msg.ok(f'Processed {area_record_count:,} records in Post Code Area "{post_code_area}"')
+                if area_error_count > 0:
+                    self.env.msg.warning(
+                        f'Records skipped in Post Code area {post_code_area} because of errors: {area_error_count:,}'
+                    )
 
         self.final_overview()
 
-    def verified_edition(self):
+    def verified_edition(self) -> Tuple[str, str]:
         """
         Four editions are published per year, nominally in February, May, August and November.
         We denote the edition date in YYYY-MM format.
         Verification fails if
-        the edition argument supplied is not in the correct format or
+        the edition argument supplied to the application is not in the correct format or
         the specified dataset does not exist in the external data directory.
-        :return:
+        :return: A tuple containing the verified edition string and the filepath of the edition's raw dataset
         """
-        edition_pattern = r'20[0-9]{2}-(02|05|08|11)'
-        if not re.fullmatch(edition_pattern, self.env.args.edition):
+        if not re.fullmatch(self.EDITION_PATTERN, self.env.args.edition):
             raise CodePointOpenError(f"Bad edition specification '{self.env.args.edition}'")
         data_root = os.path.join(
             self.env.external_data_root,
@@ -100,7 +114,13 @@ class CodePointOpen(object):
             for entry in set(a.lower() for a in self.env.args.areas):
                 yield f'{entry}.csv'
 
-    def process_csv_file(self, post_code_area, filename: str):
+    def process_csv_file(self, post_code_area: str, filename: str):
+        """
+        Process an individual post code area file from the raw dataset.
+        :param post_code_area:
+        :param filename:
+        :return:
+        """
         with open(os.path.join(self.data_root, filename), newline='') as f:
             self.env.msg.info(f'Processing Post Code Area "{post_code_area}"')
             record_count = 0
@@ -126,13 +146,21 @@ class CodePointOpen(object):
             return record_count, error_count
 
     def process_post_code(self, cursor: MySQLCursor, data: list):
+        """
+        Process and individual post code record from the raw dataset.
+        :param cursor:
+        :param data: a list of values extracted from a row in the raw csv data.
+        :raises CodePointOpenError: if the gss_admin_area_code given is unknown
+        (a gss_admin_area_code left blank, in certain circumstances, can be valid)
+        :raises CodePointOpenError: if there is a database error when posting the record to the post_codes table
+        """
         post_code = self.formatted_post_code(data[0])
         gr_source_id = int(data[1]) + 400
         osx = data[2]
         osy = data[3]
         try:
             if data[8] == 'E06000004':  # Stockton-on-Tees
-                district_id = self.stockton_division[post_code[:-4]]
+                district_id = self.STOCKTON_DIVISIONS[post_code[:-4]]
             else:
                 district_id = self.gss_codes[data[8]]
         except KeyError:
@@ -152,6 +180,9 @@ class CodePointOpen(object):
             raise e
 
     def final_overview(self):
+        """
+        Prepare and print a summary of what the process has done
+        """
         m = [
             'Processing Complete',
             f'--Post Code Areas processed: {self.area_count}',
@@ -163,6 +194,9 @@ class CodePointOpen(object):
         self.env.msg.ok(m)
 
     def fetched_gss_codes(self):
+        """
+        Create a lookup dictionary of gss_admin_area_codes from data in the districts table.
+        """
         gss_codes = {}
         q = "select gss_admin_area_code, district_id from districts where gss_admin_area_code is not null"
         c = self.env.dbc.cursor()
@@ -174,4 +208,13 @@ class CodePointOpen(object):
 
     @staticmethod
     def formatted_post_code(raw_post_code: str) -> str:
+        """
+        The post_code field in the raw data is a fixed length of seven characters:
+        the separator in the middle is 0, 1 or 2 spaces long depending upon the length of the post code district
+        whereas we prefer a single space format in all cases.
+        The reformatting relies upon the fact that the second part of the post code is always three characters long
+        rather than using regular expressions.
+        :param raw_post_code:
+        :return: The single-space formatted post code.
+        """
         return f'{raw_post_code[:-3].strip()} {raw_post_code[-3:]}'
