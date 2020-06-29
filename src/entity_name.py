@@ -6,7 +6,14 @@ class EntityName(object):
     # TODO A comprehensive punctuation list
     # Some punctuation characters (such as comma, underscore and slash, should be treated as word separators
     # Others should be ignored altogether
-    PUNCTUATION = {46: None, 44: 32, 95: 32, 45: None}
+    PUNCTUATION = {
+        34: None,  # Double Quote
+        39: None,  # Apostrophe/Single Quote
+        44: 32,    # Comma
+        45: None,  # Hyphen/Dash/Minus
+        46: None,  # Full Stop
+        95: 32     # Underscore
+    }
 
     ARTICLES = ['a', 'an', 'the', 'ye']
 
@@ -23,8 +30,8 @@ class EntityName(object):
     def index_name(self, special_index: int):
         return_value = self.stripped_elements()
         if special_index & EntityName.SI_DROP_LEADING_ARTICLE:
-            return_value = ''.join(EntityName.without_leading_article(return_value))
-        return return_value
+            return_value = EntityName.without_leading_article(return_value)
+        return ''.join(return_value)
 
     def stripped_elements(self):
         s = self.name_as_given.translate(self.PUNCTUATION)
@@ -45,7 +52,8 @@ if __name__ == "__main__":
     TEST_DATA = [
         'Natasha Moorfield',
         'Cindi.Vapid',
-        'The  Hare and Hounds'
+        'The  Hare and Hounds',
+        'Michael O\'Weary'
     ]
     for item in TEST_DATA:
         my_name = EntityName(item)

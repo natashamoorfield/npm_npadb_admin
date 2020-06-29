@@ -2,6 +2,8 @@ import os
 import mysql.connector.errors
 import csv
 import uuid
+
+from src.entity_name import EntityName
 from src.exceptions import *
 from src.environment import MyEnvironment
 
@@ -121,13 +123,26 @@ class Table(object):
         return display_name
 
     def value_conversions_import(self, row: list) -> list:
+        """
+        Return a modified CSV row depending upon the table's metadata
+        :param row:
+        :return:
+        """
+        # Fields which can be null should be null if the field in the CSV is the empty string
         for field in self.table_metadata['nullable_fields']:
             if row[field] == '':
                 row[field] = None
+
+        # In the CSV, UUIDs are stored as UUID strings; these must be converted to bytes
         for field in self.table_metadata['uuid_fields']:
             row[field] = uuid.UUID(row[field]).bytes
+
+        # Index names need to be generated according to the field's default indexing rules
+        # At present the index_name field must be the field immediately before the display_name field
         for field in self.table_metadata['indexible_names']:
-            row[field - 1] = self.index_name(row[field])
+            entity_name = EntityName(row[field['field_id']])
+            row[field['field_id'] - 1] = entity_name.index_name(field['special_index'])
+
         return row
 
     def value_conversions_export(self, retrieved_row: tuple) -> list:
