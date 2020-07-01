@@ -53,6 +53,12 @@ class Table(object):
             self.env.msg.info(f"Records exported from '{self.table_name}' table = {record_count}")
             c.close()
 
+    def value_conversions_export(self, retrieved_row: tuple) -> list:
+        row = list(retrieved_row)
+        for field in self.table_metadata['uuid_fields']:
+            row[field] = uuid.UUID(bytes=bytes(row[field]))
+        return row
+
     def create_table(self):
         try:
             with open(self.ddl_filepath, 'r') as f:
@@ -118,8 +124,8 @@ class Table(object):
     def index_name(display_name: str) -> str:
         """
         Return an index normalized version of the given display name.
+        This method is now deprecated in favour of functionality contained within the EntityName class
         """
-        # TODO: Define the translation of display_name to index_name
         return display_name
 
     def value_conversions_import(self, row: list) -> list:
@@ -145,19 +151,14 @@ class Table(object):
 
         return row
 
-    def value_conversions_export(self, retrieved_row: tuple) -> list:
-        row = list(retrieved_row)
-        for field in self.table_metadata['uuid_fields']:
-            row[field] = uuid.UUID(bytes=bytes(row[field]))
-        return row
-
-    @staticmethod
-    def values_access_levels(items):
-        return items
-
-    @staticmethod
-    def values_action_access_levels(items):
-        return items
+    """
+    If a bespoke import process is required (because, for example, the table format has changed) then
+    a special method should be created thus:
+    
+    def values_<table_name>(old_row_items: list) -> list:
+        <processing code>
+        return new_row_items
+    """
 
     @staticmethod
     def values_actions(items):
@@ -537,10 +538,4 @@ class Table(object):
     @staticmethod
     def values_user_station_visits(items):
         items[1] = uuid.UUID(items[1]).bytes
-        return items
-
-    @staticmethod
-    def values_users(items):
-        for i in [0, 3, 4]:
-            items[i] = uuid.UUID(items[i]).bytes
         return items
