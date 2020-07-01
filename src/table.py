@@ -155,25 +155,10 @@ class Table(object):
     If a bespoke import process is required (because, for example, the table format has changed) then
     a special method should be created thus:
     
-    def values_<table_name>(old_row_items: list) -> list:
+    def values_<table_name>(self, old_row_items: list) -> list:
         <processing code>
         return new_row_items
     """
-
-    @staticmethod
-    def values_actions(items):
-        items[1] = items[1].replace(' ', '_').lower()
-        for i in [3, 5]:
-            if items[i] == '':
-                items[i] = None
-        if items[4] == '':
-            items[4] = 0
-        return items
-
-    def values_ale_carriers(self, items):
-        self.record_count += 1
-        items.insert(0, self.record_count)
-        return items
 
     @staticmethod
     def values_ale_quality_definitions(items):
