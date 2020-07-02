@@ -167,10 +167,6 @@ class Table(object):
                 items[i] = None
         return items
 
-    def values_ale_names(self, items):
-        items[2] = self.index_name(items[3])
-        return items
-
     @staticmethod
     def values_ales(items):
         return items
