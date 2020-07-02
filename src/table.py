@@ -161,13 +161,6 @@ class Table(object):
     """
 
     @staticmethod
-    def values_ale_quality_definitions(items):
-        for i in [3, 5, 6]:
-            if items[i] == '':
-                items[i] = None
-        return items
-
-    @staticmethod
     def values_ales(items):
         return items
 
