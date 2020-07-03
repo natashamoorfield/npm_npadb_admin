@@ -161,24 +161,6 @@ class Table(object):
     """
 
     @staticmethod
-    def values_breweries(items):
-        if items[1] == 0:
-            items[1] = None
-        for i in [2, 3, 8, 10, 14, 15, 16]:
-            if items[i] == '':
-                items[i] = None
-        for i in [9, 11]:
-            if items[i - 1] is None:
-                items[i] = '1FF'
-            elif items[i] == "D":
-                items[i] = 'FFF'
-            elif items[i] == "M":
-                items[i] = 'FFB'
-            else:
-                items[i] = 'FF7'
-        return items
-
-    @staticmethod
     def values_brewery_ales(items):
         return items
 
