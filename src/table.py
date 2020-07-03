@@ -161,10 +161,6 @@ class Table(object):
     """
 
     @staticmethod
-    def values_ales(items):
-        return items
-
-    @staticmethod
     def values_beer_festivals(items):
         for i in [5, 7, 9, 10, 11]:
             if items[i] == '':
