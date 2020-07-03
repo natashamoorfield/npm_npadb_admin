@@ -161,13 +161,6 @@ class Table(object):
     """
 
     @staticmethod
-    def values_beer_festivals(items):
-        for i in [5, 7, 9, 10, 11]:
-            if items[i] == '':
-                items[i] = None
-        return items
-
-    @staticmethod
     def values_breweries(items):
         if items[1] == 0:
             items[1] = None
