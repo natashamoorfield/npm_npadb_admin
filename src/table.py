@@ -161,10 +161,6 @@ class Table(object):
     """
 
     @staticmethod
-    def values_brewery_ales(items):
-        return items
-
-    @staticmethod
     def values_brewery_contacts(items):
         return items
 
