@@ -165,12 +165,6 @@ class Table(object):
         return items
 
     @staticmethod
-    def values_brewery_address_types(items):
-        if items[3] == '':
-            items[3] = None
-        return items
-
-    @staticmethod
     def values_brewery_contacts(items):
         return items
 
