@@ -160,21 +160,6 @@ class Table(object):
         return new_row_items
     """
 
-    @staticmethod
-    def values_brewery_contacts(items):
-        return items
-
-    @staticmethod
-    def values_brewery_link_types(items):
-        if items[2] == '':
-            items[2] = None
-        return items
-
-    def values_brewery_links(self, items):
-        self.record_count += 1
-        items.insert(0, self.record_count)
-        return items
-
     def values_brewery_names(self, items):
         items[2] = self.index_name(items[3])
         return items
