@@ -169,20 +169,6 @@ class Table(object):
         return items
 
     @staticmethod
-    def values_brewery_status_codes(items):
-        for item in [2, 3]:
-            if items[item] == '':
-                items[item] = None
-        if items[4] == 'N':
-            items[4] = 'No'
-        elif items[4] == 'Y':
-            items[4] = 'Yes'
-        else:
-            items[4] = 'Question'
-        items[5] = int(items[0]) >> 8
-        return items
-
-    @staticmethod
     def values_brewery_type_groups(items):
         if items[2] == '':
             items[2] = None
