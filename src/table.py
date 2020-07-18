@@ -169,12 +169,6 @@ class Table(object):
         return items
 
     @staticmethod
-    def values_brewery_type_groups(items):
-        if items[2] == '':
-            items[2] = None
-        return items
-
-    @staticmethod
     def values_brewing_status_groups(items):
         if items[2] == '':
             items[2] = None
