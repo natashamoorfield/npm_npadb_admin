@@ -160,10 +160,6 @@ class Table(object):
         return new_row_items
     """
 
-    def values_brewery_names(self, items):
-        items[2] = self.index_name(items[3])
-        return items
-
     @staticmethod
     def values_brewery_pictures(items):
         if items[0] == 'brewery_id':
