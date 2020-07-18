@@ -161,12 +161,6 @@ class Table(object):
     """
 
     @staticmethod
-    def values_brewery_pictures(items):
-        if items[0] == 'brewery_id':
-            return None
-        return items
-
-    @staticmethod
     def values_brewery_types(items):
         for item in [2, 3]:
             if items[item] == '':
