@@ -161,14 +161,6 @@ class Table(object):
     """
 
     @staticmethod
-    def values_brewery_types(items):
-        for item in [2, 3]:
-            if items[item] == '':
-                items[item] = None
-        items[4] = int(items[0]) >> 8
-        return items
-
-    @staticmethod
     def values_brewing_status_groups(items):
         if items[2] == '':
             items[2] = None
