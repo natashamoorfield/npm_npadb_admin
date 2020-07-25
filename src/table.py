@@ -160,10 +160,6 @@ class Table(object):
         return new_row_items
     """
 
-    @staticmethod
-    def values_contact_types(items):
-        return items
-
     def values_copyright_types(self, items):
         self.record_count += 1
         if items[0] == '40':
