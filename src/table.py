@@ -161,12 +161,6 @@ class Table(object):
     """
 
     @staticmethod
-    def values_brewing_status_groups(items):
-        if items[2] == '':
-            items[2] = None
-        return items
-
-    @staticmethod
     def values_contact_types(items):
         return items
 
