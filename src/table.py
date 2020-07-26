@@ -161,10 +161,6 @@ class Table(object):
     """
 
     @staticmethod
-    def values_counties(items):
-        return items
-
-    @staticmethod
     def values_district_types(items):
         return items
 
