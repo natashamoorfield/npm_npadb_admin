@@ -146,7 +146,7 @@ class Table(object):
         # Index names need to be generated according to the field's default indexing rules
         # At present the index_name field must be the field immediately before the display_name field
         for field in self.table_metadata['indexible_names']:
-            entity_name = EntityName(row[field['field_id']])
+            entity_name = EntityName(row[field['field_id']], row[field['field_id'] - 1])
             row[field['field_id'] - 1] = entity_name.index_name(field['special_index'])
 
         return row

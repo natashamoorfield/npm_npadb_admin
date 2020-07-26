@@ -1,3 +1,6 @@
+from typing import Union
+
+
 class EntityName(object):
     """
     Entities have names but
@@ -9,25 +12,44 @@ class EntityName(object):
     PUNCTUATION = {
         34: None,  # Double Quote
         39: None,  # Apostrophe/Single Quote
-        44: 32,    # Comma
+        44: 32,  # Comma
         45: None,  # Hyphen/Dash/Minus
         46: None,  # Full Stop
-        95: 32     # Underscore
+        95: 32  # Underscore
     }
 
     ARTICLES = ['a', 'an', 'the', 'ye']
 
     # TODO Fully codify the 'special index' values
-    SI_DROP_LEADING_ARTICLE = 1
+    SI_SUI_GENERIS = 1
+    SI_DROP_LEADING_ARTICLE = 2
 
-    def __init__(self, name: str):
+    def __init__(self, name: str, current_index_name: Union[str, None] = None):
         self.name_as_given = name
+        if current_index_name == '':
+            self.current_index_name = None
+        else:
+            self.current_index_name = current_index_name
         self.elements = self.stripped_elements()
 
     def display_name(self):
         return self.name_as_given
 
-    def index_name(self, special_index: int):
+    def index_name(self, special_index: int) -> str:
+        """
+        Return the entity name converted into an index name.
+        If the entity already has an existing index name
+        which is and is supposed to be outside the standard indexing conventions
+        (a sui generis index name) them
+        return the existing index name as is.
+        Otherwise apply the base indexing rules and any applicable special indexing rules.
+        :param special_index: A binary encoded list of special indexing rules to apply.
+        :return: The index name.
+        """
+        if special_index & EntityName.SI_SUI_GENERIS and \
+                (self.current_index_name is not None):
+            return self.current_index_name
+
         return_value = self.stripped_elements()
         if special_index & EntityName.SI_DROP_LEADING_ARTICLE:
             return_value = EntityName.without_leading_article(return_value)
