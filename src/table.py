@@ -178,13 +178,6 @@ class Table(object):
         return items
 
     @staticmethod
-    def values_gender_descriptors(items):
-        return [
-            uuid.UUID(items[0]).bytes,
-            items[1]
-        ]
-
-    @staticmethod
     def values_gr_sources(items):
         return items
 
@@ -232,11 +225,6 @@ class Table(object):
 
     @staticmethod
     def values_picture_types(items):
-        return items
-
-    @staticmethod
-    def values_pronoun_sets(items):
-        items[0] = uuid.UUID(items[0]).bytes
         return items
 
     @staticmethod
