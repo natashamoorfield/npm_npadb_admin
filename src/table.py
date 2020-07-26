@@ -160,18 +160,6 @@ class Table(object):
         return new_row_items
     """
 
-    def values_copyright_types(self, items):
-        self.record_count += 1
-        if items[0] == '40':
-            items[0] = 255
-        else:
-            items[0] = int(items[0]) * 4
-        for i in [2, 3]:
-            if items[i] == '':
-                items[i] = None
-        items.insert(0, self.record_count)
-        return items
-
     @staticmethod
     def values_counties(items):
         return items
