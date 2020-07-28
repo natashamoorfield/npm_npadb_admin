@@ -160,19 +160,6 @@ class Table(object):
         return new_row_items
     """
 
-    def values_drinks(self, items):
-        self.record_count += 1
-        if items[3] == '':
-            items[3] = None
-        items.append(1)
-        items.insert(2, 0)
-        items.insert(0, self.record_count)
-        return items
-
-    @staticmethod
-    def values_gbg_entry_types(items):
-        return items
-
     @staticmethod
     def values_gr_sources(items):
         return items
