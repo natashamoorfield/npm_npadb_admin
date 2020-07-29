@@ -161,14 +161,6 @@ class Table(object):
     """
 
     @staticmethod
-    def values_gr_sources(items):
-        return items
-
-    @staticmethod
-    def values_locality_types(items):
-        return items
-
-    @staticmethod
     def values_name_types(items):
         return items
 
