@@ -161,27 +161,6 @@ class Table(object):
     """
 
     @staticmethod
-    def values_name_types(items):
-        return items
-
-    def values_nations(self, items):
-        return [
-            items[0],
-            self.index_name(items[1]),
-            items[1],
-            items[2]
-        ]
-
-    def values_network_names(self, items):
-        return [
-            items[0],
-            items[1],
-            self.index_name(items[2]),
-            items[2],
-            items[3]
-        ]
-
-    @staticmethod
     def values_network_types(items):
         return items
 
