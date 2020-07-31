@@ -161,14 +161,6 @@ class Table(object):
     """
 
     @staticmethod
-    def values_network_types(items):
-        return items
-
-    @staticmethod
-    def values_networks(items):
-        return items
-
-    @staticmethod
     def values_pictures(items):
         if items[0] == 'picture_id':
             return None
