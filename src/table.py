@@ -161,19 +161,6 @@ class Table(object):
     """
 
     @staticmethod
-    def values_pictures(items):
-        if items[0] == 'picture_id':
-            return None
-        for i in [3, 4, 8, 9]:
-            if items[i] == '':
-                items[i] = None
-        return items
-
-    @staticmethod
-    def values_picture_types(items):
-        return items
-
-    @staticmethod
     def values_pubs(items):
         # ignore the zero'th record
         if items[0] == '0':
@@ -196,10 +183,6 @@ class Table(object):
         items.pop(6)
         # add mr4_keg_beers
         items.insert(11, None)
-        return items
-
-    @staticmethod
-    def values_pub_contacts(items):
         return items
 
     @staticmethod
