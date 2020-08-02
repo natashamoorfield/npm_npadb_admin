@@ -186,26 +186,6 @@ class Table(object):
         return items
 
     @staticmethod
-    def values_pub_gbg_entries(items):
-        return items
-
-    def values_pub_names(self, items):
-        if items[0] == '0':
-            return None
-        items[2] = self.index_name(items[3])
-        return items
-
-    @staticmethod
-    def values_pub_pictures(items):
-        if items[0] == 'pub_id':
-            return None
-        return items
-
-    @staticmethod
-    def values_pub_ratings(items):
-        return items
-
-    @staticmethod
     def values_pub_status_codes(items):
         if items[3] == '':
             items[3] = None
