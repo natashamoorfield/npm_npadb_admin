@@ -161,28 +161,11 @@ class Table(object):
     """
 
     @staticmethod
-    def values_station_status_codes(items):
-        return [
-            int(items[0], 16),
-            items[1],
-            items[2]
-        ]
-
-    @staticmethod
     def values_station_visit_codes(items):
         return items
 
     @staticmethod
     def values_station_visit_types(items):
-        return items
-
-    @staticmethod
-    def values_stations(items):
-        if len(items[3]) == 0:
-            # a blank three_letter_code must be NULL not empty string.
-            items[3] = None
-        for i in range(5):
-            items.append(None)
         return items
 
     @staticmethod
